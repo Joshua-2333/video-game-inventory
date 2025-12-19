@@ -1,0 +1,8 @@
+<%- include('layout') %>
+
+<h1>Video Game Store</h1>
+<ul>
+  <% categories.forEach(cat => { %>
+    <li><a href="/categories/<%= cat.id %>"><%= cat.name %></a></li>
+  <% }) %>
+</ul>
