@@ -1,15 +1,21 @@
-<%- include('../layout') %>
-
 <h1><%= category.name %></h1>
 <p><%= category.description %></p>
 
 <h2>Items in this category:</h2>
+
 <ul>
-  <% items.forEach(item => { %>
-    <li>
-      <%= item.name %> - $<%= item.price %> - <%= item.platform %> - <%= item.item_condition %>
-    </li>
-  <% }) %>
+  <% if (items.length === 0) { %>
+    <li>No items in this category.</li>
+  <% } else { %>
+    <% items.forEach(item => { %>
+      <li>
+        <strong><%= item.name %></strong>
+        — $<%= item.price %>
+        — <%= item.platform %>
+        — <%= item.item_condition %>
+      </li>
+    <% }) %>
+  <% } %>
 </ul>
 
-<a href="/">Back to categories</a>
+<a href="/">← Back to categories</a>
