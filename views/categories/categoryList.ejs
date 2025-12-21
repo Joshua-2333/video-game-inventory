@@ -1,0 +1,21 @@
+<h1>Video Game Categories</h1>
+
+<a href="/categories/new">➕ New Category</a>
+<hr />
+
+<% if (!categories || categories.length === 0) { %>
+  <p>No categories found.</p>
+<% } else { %>
+  <ul>
+    <% categories.forEach(category => { %>
+      <li>
+        <a href="/categories/<%= category.id %>"><%= category.name %></a>
+        <% if (category.description) { %>
+          — <%= category.description %>
+        <% } %>
+        &nbsp;|&nbsp;
+        <a href="/categories/<%= category.id %>/edit">✏️ Edit</a>
+      </li>
+    <% }) %>
+  </ul>
+<% } %>

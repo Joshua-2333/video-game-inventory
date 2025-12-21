@@ -1,0 +1,10 @@
+<h1><%= item.name %></h1>
+
+<p>Price: $<%= item.price %></p>
+<p>Quantity: <%= item.quantity %></p>
+<p>Platform: <%= item.platform %></p>
+<p>Condition: <%= item.item_condition %></p>
+<p>Release Date: <%= item.release_date %></p>
+
+<a href="/items/<%= item.id %>/edit">✏️ Edit Item</a> |
+<a href="/categories/<%= item.category_id %>">← Back to Category</a>
