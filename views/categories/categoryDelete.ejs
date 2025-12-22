@@ -1,0 +1,27 @@
+<!-- categoryDelete.ejs -->
+<h1>Delete Category: <%= category.name %></h1>
+
+<p>
+  Are you sure you want to delete this category? 
+  <% if (items && items.length > 0) { %>
+    <strong>Warning:</strong> This category has <%= items.length %> items. You must delete the items first.
+  <% } %>
+</p>
+
+<% if (!items || items.length === 0) { %>
+  <form 
+    action="/categories/<%= category.id %>/delete" 
+    method="POST"
+    onsubmit="return confirm('Are you sure you want to permanently delete this category?');"
+  >
+    <div>
+      <label for="admin_password">Admin Password</label><br>
+      <input type="password" id="admin_password" name="admin_password" required>
+    </div>
+
+    <button type="submit">🗑️ Delete Category</button>
+    <a href="/categories/<%= category.id %>">Cancel</a>
+  </form>
+<% } else { %>
+  <a href="/categories/<%= category.id %>">Back to Category</a>
+<% } %>

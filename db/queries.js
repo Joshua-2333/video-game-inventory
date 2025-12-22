@@ -1,10 +1,7 @@
 // db/queries.js
 const pool = require('./pool');
 
-// ===========================
-// CATEGORY QUERIES
-// ===========================
-
+//CATEGORY QUERIES
 // Get all categories
 const getAllCategories = async () => {
   const res = await pool.query('SELECT * FROM categories ORDER BY name');
@@ -41,9 +38,7 @@ const deleteCategory = async (id) => {
   return res.rows[0];
 };
 
-// ===========================
 // ITEM QUERIES
-// ===========================
 
 // Get all items in a category
 const getItemsByCategory = async (categoryId) => {

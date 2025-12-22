@@ -1,0 +1,41 @@
+<!-- categoryForm.ejs -->
+<h1><%= category ? 'Edit Category' : 'New Category' %></h1>
+
+<form 
+  method="POST" 
+  action="<%= category ? `/categories/${category.id}/edit` : '/categories/new' %>"
+>
+  <div>
+    <label for="name">Name</label><br>
+    <input 
+      type="text" 
+      id="name" 
+      name="name" 
+      required 
+      value="<%= category ? category.name : '' %>"
+    >
+  </div>
+
+  <div>
+    <label for="description">Description</label><br>
+    <textarea 
+      id="description" 
+      name="description" 
+      rows="4"
+    ><%= category ? category.description : '' %></textarea>
+  </div>
+
+  <% if (category) { %>
+    <!-- Optional: Admin password for editing existing category -->
+    <div>
+      <label for="admin_password">Admin Password (required to edit)</label><br>
+      <input type="password" id="admin_password" name="admin_password" required>
+    </div>
+  <% } %>
+
+  <button type="submit">
+    <%= category ? 'Update Category' : 'Create Category' %>
+  </button>
+</form>
+
+<a href="<%= category ? `/categories/${category.id}` : '/categories' %>">Cancel</a>
