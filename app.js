@@ -9,6 +9,7 @@ const app = express();
 const indexRouter = require('./routes/indexRouter');
 const categoryRouter = require('./routes/categoryRouter');
 const itemRouter = require('./routes/itemRouter'); 
+const gameRouter = require('./routes/gameRouter'); // <-- added
 
 // View engine
 app.set('view engine', 'ejs');
@@ -22,6 +23,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use('/', indexRouter);
 app.use('/categories', categoryRouter);
 app.use('/items', itemRouter); 
+app.use('/games', gameRouter); // <-- added
 
 // 404 handler 
 app.use((req, res) => {
