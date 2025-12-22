@@ -13,9 +13,30 @@
         — $<%= item.price %>
         — <%= item.platform %>
         — <%= item.item_condition %>
+
+        <!-- Edit Item -->
+        <a href="/items/<%= item.id %>/edit">✏️ Edit</a>
+
+        <!-- Delete Item -->
+        <form action="/items/<%= item.id %>/delete" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this item?');">
+          <button type="submit">🗑️ Delete</button>
+        </form>
       </li>
     <% }) %>
   <% } %>
 </ul>
 
-<a href="/">← Back to categories</a>
+<!-- Add new item -->
+<a href="/items/new/<%= category.id %>">➕ Add New Item</a>
+
+<hr>
+
+<!-- Edit Category -->
+<a href="/categories/<%= category.id %>/edit">✏️ Edit Category</a>
+
+<!-- Delete Category -->
+<form action="/categories/<%= category.id %>/delete" method="POST" onsubmit="return confirm('Are you sure you want to delete this category?');">
+  <button type="submit">🗑️ Delete Category</button>
+</form>
+
+<a href="/categories">← Back to categories</a>

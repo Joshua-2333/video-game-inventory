@@ -11,7 +11,7 @@ const {
   deleteCategory,
 } = require('../db/queries');
 
-//LIST ALL CATEGORIES
+// LIST ALL CATEGORIES
 router.get('/', async (req, res) => {
   try {
     const categories = await getAllCategories();
@@ -26,7 +26,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-//SHOW CREATE CATEGORY FORM
+// SHOW CREATE CATEGORY FORM
 router.get('/new', (req, res) => {
   res.render('layout', {
     content: 'categories/categoryForm',
@@ -34,7 +34,7 @@ router.get('/new', (req, res) => {
   });
 });
 
-//HANDLE CREATE CATEGORY
+// HANDLE CREATE CATEGORY
 router.post('/new', async (req, res) => {
   try {
     const { name, description } = req.body;
@@ -46,7 +46,7 @@ router.post('/new', async (req, res) => {
   }
 });
 
-//SHOW EDIT CATEGORY FORM
+// SHOW EDIT CATEGORY FORM
 router.get('/:id/edit', async (req, res) => {
   try {
     const category = await getCategoryById(req.params.id);
@@ -65,7 +65,7 @@ router.get('/:id/edit', async (req, res) => {
   }
 });
 
-//HANDLE UPDATE CATEGORY
+// HANDLE UPDATE CATEGORY
 router.post('/:id/edit', async (req, res) => {
   try {
     const { name, description } = req.body;
@@ -96,6 +96,26 @@ router.get('/:id', async (req, res) => {
     });
   } catch (err) {
     console.error('ERROR in category detail route:', err);
+    res.status(500).send('Server error');
+  }
+});
+
+// DELETE CATEGORY
+router.post('/:id/delete', async (req, res) => {
+  try {
+    const categoryId = req.params.id;
+
+    const items = await getItemsByCategory(categoryId);
+    if (items.length > 0) {
+      return res
+        .status(400)
+        .send('Cannot delete category with items. Delete the items first.');
+    }
+
+    await deleteCategory(categoryId);
+    res.redirect('/categories');
+  } catch (err) {
+    console.error('ERROR deleting category:', err);
     res.status(500).send('Server error');
   }
 });

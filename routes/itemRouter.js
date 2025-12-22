@@ -11,7 +11,7 @@ const {
   getAllCategories,
 } = require('../db/queries');
 
-//SHOW CREATE ITEM FORM
+// SHOW CREATE ITEM FORM
 router.get('/new/:categoryId', async (req, res) => {
   try {
     const categoryId = req.params.categoryId;
@@ -29,7 +29,7 @@ router.get('/new/:categoryId', async (req, res) => {
   }
 });
 
-//HANDLE CREATE ITEM
+// HANDLE CREATE ITEM
 router.post('/new', async (req, res) => {
   try {
     const {
@@ -59,7 +59,7 @@ router.post('/new', async (req, res) => {
   }
 });
 
-//SHOW EDIT ITEM FORM
+// SHOW EDIT ITEM FORM
 router.get('/:id/edit', async (req, res) => {
   try {
     const item = await getItemById(req.params.id);
@@ -79,7 +79,7 @@ router.get('/:id/edit', async (req, res) => {
   }
 });
 
-//HANDLE UPDATE ITEM
+// HANDLE UPDATE ITEM
 router.post('/:id/edit', async (req, res) => {
   try {
     const {
@@ -110,7 +110,7 @@ router.post('/:id/edit', async (req, res) => {
   }
 });
 
-//ITEM DETAIL PAGE
+// ITEM DETAIL PAGE
 router.get('/:id', async (req, res) => {
   try {
     const item = await getItemById(req.params.id);
@@ -122,6 +122,20 @@ router.get('/:id', async (req, res) => {
     });
   } catch (err) {
     console.error(err);
+    res.status(500).send('Server error');
+  }
+});
+
+// DELETE ITEM
+router.post('/:id/delete', async (req, res) => {
+  try {
+    const item = await getItemById(req.params.id);
+    if (!item) return res.status(404).send('Item not found');
+
+    await deleteItem(req.params.id);
+    res.redirect(`/categories/${item.category_id}`);
+  } catch (err) {
+    console.error('ERROR deleting item:', err);
     res.status(500).send('Server error');
   }
 });

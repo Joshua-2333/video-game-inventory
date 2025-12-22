@@ -1,10 +1,20 @@
 <h1><%= item.name %></h1>
 
-<p>Price: $<%= item.price %></p>
-<p>Quantity: <%= item.quantity %></p>
-<p>Platform: <%= item.platform %></p>
-<p>Condition: <%= item.item_condition %></p>
-<p>Release Date: <%= item.release_date %></p>
+<p>
+  <strong>Price:</strong> $<%= item.price %><br>
+  <strong>Quantity:</strong> <%= item.quantity %><br>
+  <strong>Platform:</strong> <%= item.platform %><br>
+  <strong>Condition:</strong> <%= item.item_condition %><br>
+  <strong>Release Date:</strong> <%= item.release_date.toISOString().split('T')[0] %>
+</p>
 
-<a href="/items/<%= item.id %>/edit">✏️ Edit Item</a> |
-<a href="/categories/<%= item.category_id %>">← Back to Category</a>
+<!-- Edit Item -->
+<a href="/items/<%= item.id %>/edit">✏️ Edit Item</a>
+
+<!-- Delete Item -->
+<form action="/items/<%= item.id %>/delete" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this item?');">
+  <button type="submit">🗑️ Delete Item</button>
+</form>
+
+<!-- Back to category -->
+<a href="/categories/<%= item.category_id %>">← Back to category</a>
