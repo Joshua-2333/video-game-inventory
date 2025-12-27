@@ -1,70 +1,53 @@
 <h1>All Games</h1>
 
-<!-- Filter section -->
-<div class="filters" style="margin-bottom: 20px;">
-  <label for="genreFilter">Filter by Genre:</label>
-  <select id="genreFilter" onchange="filterGames()">
+<!-- FILTER FORM (SERVER-SIDE FILTERING) -->
+<form method="GET" action="/games" style="margin-bottom: 20px;">
+
+  <label for="genre">Filter by Genre:</label>
+  <select name="genre" id="genre">
     <option value="all">All</option>
-    <% ['RPG','Action','Shooter','Sports','Strategy','Adventure','Accessories'].forEach(genre => { %>
-      <option value="<%= genre %>"><%= genre %></option>
+    <% ['RPG','Action','Shooter','Sports','Strategy','Adventure','Accessories'].forEach(g => { %>
+      <option value="<%= g %>" <%= g === genre ? 'selected' : '' %>>
+        <%= g %>
+      </option>
     <% }) %>
   </select>
 
-  <label for="platformFilter" style="margin-left: 20px;">Filter by Platform:</label>
-  <select id="platformFilter" onchange="filterGames()">
+  <label for="platform" style="margin-left: 20px;">Filter by Platform:</label>
+  <select name="platform" id="platform">
     <option value="all">All Platforms</option>
-    <% ['Xbox','PS','Switch','PC'].forEach(platform => { %>
-      <option value="<%= platform %>"><%= platform === 'PS' ? 'PlayStation' : platform %></option>
-    <% }) %>
+    <option value="Xbox">Xbox</option>
+    <option value="PS">PlayStation</option>
+    <option value="Switch">Switch</option>
+    <option value="PC">PC</option>
   </select>
-</div>
 
-<!-- Games grid -->
-<div id="gamesList" style="display:grid; grid-template-columns: repeat(auto-fill,minmax(250px,1fr)); gap:15px;">
-  <% games.forEach(game => { %>
-    <div class="game-card"
-         data-genre="<%= game.genre || 'Unknown' %>"
-         data-platforms="<%= game.platforms && game.platforms.length ? game.platforms.join(',') : '' %>"
-         style="border:1px solid #ccc; padding:10px; border-radius:5px;">
-      <h3><%= game.name %></h3>
-      <p>Genre: <%= game.genre || 'Unknown' %></p>
-      <p>Platforms: <%= game.platforms && game.platforms.length ? game.platforms.join(', ') : 'No Platforms' %></p>
-      <p>Price: $<%= game.price %></p>
-    </div>
-  <% }) %>
-</div>
+  <button type="submit" style="margin-left: 10px;">Apply</button>
+</form>
 
-<p id="noGames" style="display:none; margin-top:10px;">No games match the selected filters.</p>
+<!-- GAMES GRID -->
+<% if (games.length === 0) { %>
+  <p>No games found.</p>
+<% } else { %>
+  <div style="display:grid; grid-template-columns: repeat(auto-fill,minmax(250px,1fr)); gap:15px;">
+    <% games.forEach(game => { %>
+      <div style="border:1px solid #ccc; padding:12px; border-radius:6px;">
+        <h3><%= game.name %></h3>
 
-<script>
-  function filterGames() {
-    const genreFilter = document.getElementById('genreFilter').value;
-    const platformFilter = document.getElementById('platformFilter').value;
+        <p><strong>Genre:</strong> <%= game.genre || 'Unknown' %></p>
 
-    const items = document.querySelectorAll('#gamesList .game-card');
-    let visibleCount = 0;
+        <p>
+          <strong>Platforms:</strong>
+          <%= game.platforms && game.platforms.length
+            ? game.platforms.join(', ')
+            : 'None' %>
+        </p>
 
-    items.forEach(item => {
-      const genre = item.dataset.genre;
-      const platforms = item.dataset.platforms ? item.dataset.platforms.split(',') : [];
+        <p><strong>Condition:</strong> <%= game.item_condition %></p>
+        <p><strong>Price:</strong> $<%= game.price %></p>
+      </div>
+    <% }) %>
+  </div>
+<% } %>
 
-      const genreMatch = genreFilter === 'all' || genre === genreFilter;
-
-      const platformMatch =
-        platformFilter === 'all' ||
-        (platformFilter === 'PS' && (platforms.includes('PS3') || platforms.includes('PS4') || platforms.includes('PS5'))) ||
-        platforms.includes(platformFilter);
-
-      if (genreMatch && platformMatch) {
-        item.style.display = 'block';
-        visibleCount++;
-      } else {
-        item.style.display = 'none';
-      }
-    });
-
-    document.getElementById('noGames').style.display = visibleCount === 0 ? 'block' : 'none';
-  }
-</script>
-
-<a href="/">← Back to Home</a>
+<a href="/" style="display:block; margin-top:20px;">← Back to Home</a>

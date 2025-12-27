@@ -6,10 +6,12 @@ const {
   insertCategory,
   updateCategory,
   deleteCategory,
-  getAllGamesWithPlatforms,
 } = require('../db/queries');
 
-//LIST ALL CATEGORIES
+/**
+ * LIST ALL CATEGORIES
+ * GET /categories
+ */
 exports.categoryList = async (req, res) => {
   try {
     const categories = await getAllCategories();
@@ -24,41 +26,37 @@ exports.categoryList = async (req, res) => {
   }
 };
 
-//CATEGORY DETAIL
+/**
+ * CATEGORY DETAIL
+ * GET /categories/:id
+ */
 exports.categoryDetail = async (req, res) => {
   try {
     const categoryId = req.params.id;
-    const category = await getCategoryById(categoryId);
 
+    const category = await getCategoryById(categoryId);
     if (!category) {
       return res.status(404).send('Category not found');
     }
 
-    // If this category is "Games", render the special filtered page
-    if (category.name === 'Games') {
-      const games = await getAllGamesWithPlatforms(categoryId);
-
-      return res.render('layout', {
-        content: 'games', // renders views/games.ejs
-        games,
-      });
-    }
-
-    // Otherwise, render normal category detail
     const items = await getItemsByCategory(categoryId);
 
+    // Always render category detail, even if empty
     res.render('layout', {
       content: 'categories/categoryDetail',
       category,
-      items,
+      items: items || [],
     });
   } catch (err) {
-    console.error('ERROR in category detail:', err);
+    console.error('ERROR loading category detail:', err);
     res.status(500).send('Server error');
   }
 };
 
-//CREATE CATEGORY
+/**
+ * CREATE CATEGORY (FORM)
+ * GET /categories/new
+ */
 exports.categoryCreateForm = (req, res) => {
   res.render('layout', {
     content: 'categories/categoryForm',
@@ -66,6 +64,10 @@ exports.categoryCreateForm = (req, res) => {
   });
 };
 
+/**
+ * CREATE CATEGORY (POST)
+ * POST /categories/new
+ */
 exports.categoryCreate = async (req, res) => {
   try {
     const { name, description } = req.body;
@@ -77,7 +79,10 @@ exports.categoryCreate = async (req, res) => {
   }
 };
 
-//EDIT CATEGORY
+/**
+ * EDIT CATEGORY (FORM)
+ * GET /categories/:id/edit
+ */
 exports.categoryEditForm = async (req, res) => {
   try {
     const category = await getCategoryById(req.params.id);
@@ -96,6 +101,10 @@ exports.categoryEditForm = async (req, res) => {
   }
 };
 
+/**
+ * UPDATE CATEGORY
+ * POST /categories/:id/edit
+ */
 exports.categoryUpdate = async (req, res) => {
   try {
     const { name, description } = req.body;
@@ -107,7 +116,10 @@ exports.categoryUpdate = async (req, res) => {
   }
 };
 
-// DELETE CATEGORY
+/**
+ * DELETE CATEGORY
+ * POST /categories/:id/delete
+ */
 exports.categoryDelete = async (req, res) => {
   try {
     const { admin_password } = req.body;
