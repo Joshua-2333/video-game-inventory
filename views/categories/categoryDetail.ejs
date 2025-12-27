@@ -1,31 +1,97 @@
-<!-- CcategoryDetail.ejs -->
+<!-- categoryDetail.ejs -->
 <h1><%= category.name %></h1>
 <p><%= category.description %></p>
 
-<h2>Items in this category:</h2>
+<% if (typeof games !== 'undefined') { %>
+  <!-- Games filter -->
+  <div class="filters" style="margin-bottom: 20px;">
+    <label for="genreFilter">Filter by Genre:</label>
+    <select id="genreFilter" onchange="filterGames()">
+      <option value="all">All</option>
+      <% 
+        const allGenres = [...new Set(games.map(g => g.genre).filter(Boolean))];
+        allGenres.forEach(genre => { 
+      %>
+        <option value="<%= genre %>"><%= genre %></option>
+      <% }) %>
+    </select>
 
-<ul>
-  <% if (items.length === 0) { %>
-    <li>No items in this category.</li>
-  <% } else { %>
-    <% items.forEach(item => { %>
-      <li>
-        <strong><%= item.name %></strong>
-        — $<%= item.price %>
-        — <%= item.platform %>
-        — <%= item.item_condition %>
+    <label for="platformFilter" style="margin-left: 20px;">Filter by Platform:</label>
+    <select id="platformFilter" onchange="filterGames()">
+      <option value="all">All Platforms</option>
+      <% 
+        const allPlatforms = [...new Set(games.flatMap(g => g.platforms || []).filter(Boolean))];
+        allPlatforms.forEach(platform => { 
+      %>
+        <option value="<%= platform %>"><%= platform %></option>
+      <% }) %>
+    </select>
+  </div>
 
-        <!-- Edit Item -->
-        <a href="/items/<%= item.id %>/edit">✏️ Edit</a>
-
-        <!-- Delete Item -->
-        <form action="/items/<%= item.id %>/delete" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this item?');">
-          <button type="submit">🗑️ Delete</button>
-        </form>
-      </li>
+  <!-- Games grid -->
+  <div id="gamesList" style="display:grid; grid-template-columns: repeat(auto-fill,minmax(250px,1fr)); gap:15px;">
+    <% games.forEach(game => { %>
+      <div class="game-card"
+           data-genre="<%= game.genre || 'Unknown' %>"
+           data-platforms="<%= game.platforms && game.platforms.length ? game.platforms.join(',') : '' %>"
+           style="border:1px solid #ccc; padding:10px; border-radius:5px;">
+        <h3><%= game.name %></h3>
+        <p>Genre: <%= game.genre || 'Unknown' %></p>
+        <p>Platforms: <%= game.platforms && game.platforms.length ? game.platforms.join(', ') : 'No Platforms' %></p>
+        <p>Price: $<%= game.price %></p>
+      </div>
     <% }) %>
-  <% } %>
-</ul>
+  </div>
+
+  <p id="noGames" style="display:none; margin-top:10px;">No games match the selected filters.</p>
+
+  <script>
+    function filterGames() {
+      const genreFilter = document.getElementById('genreFilter').value;
+      const platformFilter = document.getElementById('platformFilter').value;
+      const items = document.querySelectorAll('#gamesList .game-card');
+      let visibleCount = 0;
+
+      items.forEach(item => {
+        const genre = item.dataset.genre;
+        const platforms = item.dataset.platforms ? item.dataset.platforms.split(',') : [];
+        const genreMatch = genreFilter === 'all' || genre === genreFilter;
+        const platformMatch =
+          platformFilter === 'all' ||
+          (platformFilter === 'PS' && (platforms.includes('PS3') || platforms.includes('PS4') || platforms.includes('PS5'))) ||
+          platforms.includes(platformFilter);
+
+        if (genreMatch && platformMatch) {
+          item.style.display = 'block';
+          visibleCount++;
+        } else {
+          item.style.display = 'none';
+        }
+      });
+
+      document.getElementById('noGames').style.display = visibleCount === 0 ? 'block' : 'none';
+    }
+  </script>
+
+<% } else { %>
+  <!-- Non-games category -->
+  <h2>Items in this category:</h2>
+  <ul>
+    <% if (items && items.length) { %>
+      <% items.forEach(item => { %>
+        <li>
+          <strong><%= item.name %></strong> — $<%= item.price %> — <%= item.item_condition %>
+          <a href="/items/<%= item.id %>/edit">✏️ Edit</a>
+          <form action="/items/<%= item.id %>/delete" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this item?');">
+            <button type="submit">🗑️ Delete</button>
+          </form>
+        </li>
+      <% }) %>
+    <% } else { %>
+      <li>No items in this category.</li>
+    <% } %>
+  </ul>
+<% } %>
 
 <!-- Add new item -->
 <a href="/items/new/<%= category.id %>">➕ Add New Item</a>

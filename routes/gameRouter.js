@@ -13,8 +13,17 @@ router.get('/', async (req, res) => {
   try {
     const { genre, platform } = req.query;
 
-    // Fetch all games (with platforms + genre already joined)
+    // Fetch all games
     let games = await getAllGames();
+
+    // Normalize data to prevent errors in EJS
+    games = games.map(game => ({
+      ...game,
+      genre: game.genre || 'Unknown',
+      platforms: Array.isArray(game.platforms) ? game.platforms : [],
+      price: game.price || 0,
+      item_condition: game.item_condition || 'New',
+    }));
 
     // SERVER-SIDE FILTERING
     if (genre && genre !== 'all') {
@@ -23,26 +32,24 @@ router.get('/', async (req, res) => {
 
     if (platform && platform !== 'all') {
       games = games.filter(game => {
-        if (!game.platforms) return false;
+        if (!game.platforms.length) return false;
 
-        // Special handling for PlayStation
+        // Handle PlayStation as alias for PS3, PS4, PS5
         if (platform === 'PS') {
-          return game.platforms.some(p =>
-            p === 'PS3' || p === 'PS4' || p === 'PS5'
-          );
+          return game.platforms.some(p => ['PS3', 'PS4', 'PS5'].includes(p));
         }
 
         return game.platforms.includes(platform);
       });
     }
 
-    // JSON MODE (for AJAX later)
+    // Respond with JSON if requested (useful for future AJAX)
     if (req.headers.accept?.includes('application/json')) {
       return res.json({ games });
     }
 
-    // EJS RENDER
-    res.render('games', { games });
+    // Render the EJS page
+    res.render('games', { games, genre: genre || 'all', platform: platform || 'all' });
 
   } catch (err) {
     console.error('Error fetching games:', err);
