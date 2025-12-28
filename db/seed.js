@@ -11,8 +11,9 @@ const {
   try {
     console.log('Seeding database...');
 
-    //CATEGORIES
+    // --- CATEGORIES ---
     const categories = [
+      // Game genres (keep all your existing types)
       { name: 'RPG', description: 'Role-playing games' },
       { name: 'Action', description: 'Fast-paced action games' },
       { name: 'Sports', description: 'Sports simulation games' },
@@ -20,6 +21,10 @@ const {
       { name: 'Shooter', description: 'First-person and third-person shooters' },
       { name: 'Strategy', description: 'Strategy and simulation games' },
       { name: 'Accessories', description: 'Controllers, headsets, and peripherals' },
+
+      // Homepage main categories
+      { name: 'Consoles', description: 'Gaming consoles of all generations' },
+      { name: 'Games', description: 'All video games' }
     ];
 
     const categoryMap = {};
@@ -35,14 +40,11 @@ const {
       console.log(`Category ready: ${createdCat.name} (ID: ${createdCat.id})`);
     }
 
-    //PLATFORMS
+    // --- PLATFORMS ---
     const allPlatforms = ['PS3', 'PS4', 'PS5', 'Xbox', 'Switch', 'PC'];
-
     const platformRes = await pool.query('SELECT * FROM platforms');
     const platformMap = {};
-    for (const row of platformRes.rows) {
-      platformMap[row.name] = row.id;
-    }
+    for (const row of platformRes.rows) platformMap[row.name] = row.id;
 
     for (const platform of allPlatforms) {
       if (!platformMap[platform]) {
@@ -52,12 +54,12 @@ const {
       }
     }
 
-    //CLEAR OLD ITEMS
+    // --- CLEAR OLD ITEMS ---
     await pool.query('DELETE FROM item_platforms');
     await pool.query('DELETE FROM items');
     console.log('Cleared old items and item-platform links.');
 
-    //ITEMS
+    // --- ITEMS ---
     const items = [
       // RPG
       { name: 'Final Fantasy XV', price: 59.99, quantity: 10, category: 'RPG', genre: 'RPG', platforms: ['PS4','PC'], item_condition: 'New', release_date: '2016-11-29' },
@@ -110,9 +112,13 @@ const {
       { name: 'Gaming Headset', price: 49.99, quantity: 20, category: 'Accessories', genre: 'Accessories', platforms: ['PC'], item_condition: 'New', release_date: '2021-08-15' },
     ];
 
-    //INSERT ITEMS & PLATFORM MAPPING
+    // --- INSERT ITEMS & PLATFORM MAPPING ---
     for (const item of items) {
-      const categoryId = categoryMap[item.category];
+      // Map game items to homepage "Games", accessories stay as Accessories
+      let categoryId = categoryMap[item.category];
+      if (['RPG','Action','Sports','Adventure','Shooter','Strategy'].includes(item.category)) {
+        categoryId = categoryMap['Games'];
+      }
       if (!categoryId) {
         console.warn(`⚠️ Skipping item, category not found: ${item.name}`);
         continue;
@@ -125,7 +131,7 @@ const {
         categoryId,
         item.item_condition,
         item.release_date,
-        item.genre // <-- pass genre
+        item.genre
       );
 
       for (const platformName of item.platforms) {

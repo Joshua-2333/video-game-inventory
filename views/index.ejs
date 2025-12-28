@@ -4,9 +4,13 @@
 
 <div class="cards-grid">
   <% if (categories && categories.length) { %>
-    <% categories
-         .filter(category => category.name !== 'PC Games') // Remove PC Games
-         .forEach(category => { %>
+    <% 
+      // Only show homepage main categories
+      const homepageCategories = categories.filter(cat => 
+        ['Games', 'Consoles', 'Accessories'].includes(cat.name)
+      );
+      homepageCategories.forEach(category => { 
+    %>
       <div class="card">
         <h3>
           <a href="/categories/<%= category.id %>"><%= category.name %></a>
