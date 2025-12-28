@@ -5,33 +5,42 @@ require('dotenv').config();
 
 const app = express();
 
-// Routes
+// Import routers
 const indexRouter = require('./routes/indexRouter');
 const categoryRouter = require('./routes/categoryRouter');
-const itemRouter = require('./routes/itemRouter'); 
-const gameRouter = require('./routes/gameRouter'); // <-- added
+const itemRouter = require('./routes/itemRouter');
+const gameRouter = require('./routes/gameRouter');
 
-// View engine
+// Set EJS as view engine
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 // Middleware
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: false }));
+app.use(express.json()); // For JSON requests
 
 // Routes
 app.use('/', indexRouter);
 app.use('/categories', categoryRouter);
-app.use('/items', itemRouter); 
-app.use('/games', gameRouter); // <-- added
+app.use('/items', itemRouter);
+app.use('/games', gameRouter);
 
-// 404 handler 
+// 404 handler
 app.use((req, res) => {
-  res.status(404).send('Page not found');
+  res.status(404).render('404', { message: 'Page not found' });
 });
 
-// Server
+// Error handler (optional, useful for Render)
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).render('500', { message: 'Internal Server Error' });
+});
+
+// Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
+
+module.exports = app; // Export app for testing or future use
