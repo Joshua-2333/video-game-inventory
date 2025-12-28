@@ -1,7 +1,7 @@
 // db/queries.js
 const pool = require('./pool');
 
-/*CATEGORY QUERIES*/
+/* CATEGORY QUERIES */
 
 // Get all categories
 const getAllCategories = async () => {
@@ -56,7 +56,7 @@ const deleteCategory = async (id) => {
   return rows[0];
 };
 
-/*ITEM QUERIES*/
+/* ITEM QUERIES */
 
 // Get all items in a category (with platforms)
 const getItemsByCategory = async (categoryId) => {
@@ -69,14 +69,13 @@ const getItemsByCategory = async (categoryId) => {
       i.quantity,
       i.item_condition,
       i.release_date,
-      c.name AS genre,
+      i.genre,  -- Use the genre column from items table
       ARRAY_AGG(p.name) FILTER (WHERE p.name IS NOT NULL) AS platforms
     FROM items i
-    JOIN categories c ON i.category_id = c.id
     LEFT JOIN item_platforms ip ON i.id = ip.item_id
     LEFT JOIN platforms p ON ip.platform_id = p.id
     WHERE i.category_id = $1
-    GROUP BY i.id, c.name
+    GROUP BY i.id
     ORDER BY i.name
     `,
     [categoryId]
@@ -95,14 +94,13 @@ const getItemById = async (id) => {
       i.quantity,
       i.item_condition,
       i.release_date,
-      c.name AS genre,
+      i.genre,  -- Use the genre column from items table
       ARRAY_AGG(p.name) FILTER (WHERE p.name IS NOT NULL) AS platforms
     FROM items i
-    JOIN categories c ON i.category_id = c.id
     LEFT JOIN item_platforms ip ON i.id = ip.item_id
     LEFT JOIN platforms p ON ip.platform_id = p.id
     WHERE i.id = $1
-    GROUP BY i.id, c.name
+    GROUP BY i.id
     `,
     [id]
   );
@@ -116,16 +114,17 @@ const insertItem = async (
   quantity,
   categoryId,
   item_condition,
-  release_date
+  release_date,
+  genre
 ) => {
   const { rows } = await pool.query(
     `
     INSERT INTO items
-      (name, price, quantity, category_id, item_condition, release_date)
-    VALUES ($1, $2, $3, $4, $5, $6)
+      (name, price, quantity, category_id, item_condition, release_date, genre)
+    VALUES ($1, $2, $3, $4, $5, $6, $7)
     RETURNING *
     `,
-    [name, price, quantity, categoryId, item_condition, release_date]
+    [name, price, quantity, categoryId, item_condition, release_date, genre]
   );
   return rows[0];
 };
@@ -138,7 +137,8 @@ const updateItem = async (
   quantity,
   categoryId,
   item_condition,
-  release_date
+  release_date,
+  genre
 ) => {
   const { rows } = await pool.query(
     `
@@ -148,11 +148,12 @@ const updateItem = async (
       quantity = $3,
       category_id = $4,
       item_condition = $5,
-      release_date = $6
-    WHERE id = $7
+      release_date = $6,
+      genre = $7
+    WHERE id = $8
     RETURNING *
     `,
-    [name, price, quantity, categoryId, item_condition, release_date, id]
+    [name, price, quantity, categoryId, item_condition, release_date, genre, id]
   );
   return rows[0];
 };
@@ -166,7 +167,7 @@ const deleteItem = async (id) => {
   return rows[0];
 };
 
-/*PLATFORM QUERIES*/
+/* PLATFORM QUERIES */
 
 // Get platform id by name
 const getPlatformId = async (name) => {
@@ -190,7 +191,7 @@ const insertItemPlatform = async (itemId, platformId) => {
   return rows[0];
 };
 
-/*GAME QUERIES (ALL GAMES VIEW)*/
+/* GAME QUERIES (ALL GAMES VIEW) */
 
 const getAllGames = async () => {
   const { rows } = await pool.query(
@@ -199,21 +200,20 @@ const getAllGames = async () => {
       i.id,
       i.name,
       i.price,
-      c.name AS genre,
+      i.genre,           -- Use the genre column from items table
       i.item_condition,
       ARRAY_AGG(p.name) FILTER (WHERE p.name IS NOT NULL) AS platforms
     FROM items i
-    JOIN categories c ON i.category_id = c.id
     LEFT JOIN item_platforms ip ON i.id = ip.item_id
     LEFT JOIN platforms p ON ip.platform_id = p.id
-    GROUP BY i.id, c.name
+    GROUP BY i.id
     ORDER BY i.name
     `
   );
   return rows;
 };
 
-/*EXPORTS*/
+/* EXPORTS */
 
 module.exports = {
   // Categories

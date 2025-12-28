@@ -9,8 +9,7 @@
     <select id="genreFilter" onchange="filterGames()">
       <option value="all">All</option>
       <% 
-        // Get unique genres from items
-        const allGenres = [...new Set(items.map(g => g.genre).filter(Boolean))];
+        const allGenres = [...new Set(items.map(item => item.genre))].sort();
         allGenres.forEach(genre => { 
       %>
         <option value="<%= genre %>"><%= genre %></option>
@@ -21,8 +20,7 @@
     <select id="platformFilter" onchange="filterGames()">
       <option value="all">All</option>
       <% 
-        // Get unique platforms from items
-        const allPlatforms = [...new Set(items.flatMap(g => g.platforms || []).filter(Boolean))];
+        const allPlatforms = [...new Set(items.flatMap(item => item.platforms))].sort();
         allPlatforms.forEach(platform => { 
       %>
         <option value="<%= platform %>"><%= platform %></option>
@@ -61,7 +59,7 @@
 
       gameCards.forEach(card => {
         const genre = card.dataset.genre;
-        const platforms = card.dataset.platforms ? card.dataset.platforms.split(',') : [];
+        const platforms = card.dataset.platforms.split(',');
 
         const genreMatch = genreFilter === 'all' || genre === genreFilter;
         const platformMatch =
@@ -84,7 +82,7 @@
 <% } else { %>
   <!-- Non-Games categories -->
   <h2>Items in this category:</h2>
-  <% if (items && items.length) { %>
+  <% if (items.length) { %>
     <ul>
       <% items.forEach(item => { %>
         <li>

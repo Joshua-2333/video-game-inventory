@@ -32,24 +32,16 @@ exports.categoryDetail = async (req, res) => {
     let items = await getItemsByCategory(categoryId);
     items = items || [];
 
-    // For Games, normalize items for dropdown filtering
-    if (category.name === 'Games') {
-      items = items.map(item => ({
-        ...item,
-        genre: item.genre || 'Unknown',
-        platforms: Array.isArray(item.platforms) ? item.platforms : [],
-        price: item.price || 0,
-        item_condition: item.item_condition || 'New',
-      }));
+    // Normalize all items: ensure genre, platforms, price, and condition are valid
+    items = items.map(item => ({
+      ...item,
+      genre: item.genre || 'Unknown',
+      platforms: Array.isArray(item.platforms) ? item.platforms : [],
+      price: item.price || 0,
+      item_condition: item.item_condition || 'New',
+    }));
 
-      return res.render('layout', {
-        content: 'categories/categoryDetail',
-        category,
-        items,   // send all games
-      });
-    }
-
-    // All other categories
+    // Render categoryDetail with items
     res.render('layout', {
       content: 'categories/categoryDetail',
       category,
