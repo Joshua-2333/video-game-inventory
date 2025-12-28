@@ -1,13 +1,13 @@
 <!-- categoryDetail.ejs -->
-
 <% const displayName = category ? category.name : categoryName; %>
 <h1><%= displayName %></h1>
+
 <% if (category) { %>
   <p><%= category.description %></p>
 <% } %>
 
 <% if (displayName === 'Games') { %>
-  <!-- Filters for Games -->
+  <!-- Games filters -->
   <div class="filters" style="margin-bottom: 20px;">
     <label for="genreFilter">Genre:</label>
     <select id="genreFilter" onchange="filterGames()">
@@ -32,7 +32,6 @@
     </select>
   </div>
 
-  <!-- Games list -->
   <div id="gamesList" class="cards-grid">
     <% items.forEach(item => { %>
       <div class="game-card"
@@ -83,7 +82,7 @@
   </script>
 
 <% } else { %>
-  <!-- Non-Games categories styled as cards -->
+  <!-- Consoles and other non-game categories -->
   <h2>Items in this category:</h2>
   <% if (items && items.length) { %>
     <div class="cards-grid">

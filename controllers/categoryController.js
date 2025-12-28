@@ -32,10 +32,11 @@ exports.categoryDetail = async (req, res) => {
     let category = null;
     let categoryName = '';
 
+    const allCategories = await getAllCategories();
+    const gameCategoryNames = ['RPG', 'Action', 'Sports', 'Adventure', 'Shooter', 'Strategy'];
+
     if (categoryId === 'games') {
       // Virtual "Games" category: aggregate items from all game-related categories
-      const allCategories = await getAllCategories();
-      const gameCategoryNames = ['RPG', 'Action', 'Sports', 'Adventure', 'Shooter', 'Strategy'];
       const gameCategoryIds = allCategories
         .filter(c => gameCategoryNames.includes(c.name))
         .map(c => c.id);
@@ -47,22 +48,24 @@ exports.categoryDetail = async (req, res) => {
       categoryName = 'Games';
 
     } else if (categoryId === 'consoles') {
-      // Virtual "Consoles" category: aggregate items by platform
-      const platforms = ['PS3','PS4','PS5','Xbox','Switch','PC'];
-      for (const platform of platforms) {
-        const res = await pool.query(`
-          SELECT i.id, i.name, i.price, i.genre, i.item_condition,
-                 ARRAY_AGG(p.name) FILTER (WHERE p.name IS NOT NULL) AS platforms
-          FROM items i
-          JOIN item_platforms ip ON i.id = ip.item_id
-          JOIN platforms p ON ip.platform_id = p.id
-          WHERE p.name = $1
-          GROUP BY i.id
-          ORDER BY i.name
-        `, [platform]);
-        items = items.concat(res.rows);
-      }
-      categoryName = 'Consoles';
+      // Consoles category: explicitly fetch items in category id = 2
+      category = await getCategoryById(2);
+      if (!category) return res.status(404).render('404', { message: 'Category not found' });
+
+      // Query to get items only in the consoles category (id=2) with their platforms
+      const resQuery = await pool.query(`
+        SELECT i.id, i.name, i.price, i.genre, i.item_condition,
+               ARRAY_AGG(p.name) FILTER (WHERE p.name IS NOT NULL) AS platforms
+        FROM items i
+        LEFT JOIN item_platforms ip ON i.id = ip.item_id
+        LEFT JOIN platforms p ON ip.platform_id = p.id
+        WHERE i.category_id = $1
+        GROUP BY i.id
+        ORDER BY i.name
+      `, [2]);
+
+      items = resQuery.rows;
+      categoryName = category.name;
 
     } else {
       // Normal category by numeric ID
@@ -83,7 +86,7 @@ exports.categoryDetail = async (req, res) => {
       item_condition: item.item_condition || 'New',
     }));
 
-    // Render the layout safely
+    // Render layout
     res.render('layout', {
       content: 'categories/categoryDetail',
       category,
