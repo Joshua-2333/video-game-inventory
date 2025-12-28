@@ -1,0 +1,49 @@
+<!-- 500.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Server Error</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
+      color: #333;
+      text-align: center;
+      padding: 50px;
+    }
+    h1 {
+      color: #c00;
+      font-size: 48px;
+    }
+    p {
+      font-size: 18px;
+    }
+    pre {
+      text-align: left;
+      background: #eee;
+      padding: 10px;
+      overflow-x: auto;
+    }
+    a {
+      display: inline-block;
+      margin-top: 20px;
+      text-decoration: none;
+      color: #fff;
+      background: #333;
+      padding: 10px 20px;
+      border-radius: 5px;
+    }
+    a:hover {
+      background: #555;
+    }
+  </style>
+</head>
+<body>
+  <h1>500 — Internal Server Error</h1>
+  <p><%= error.message %></p>
+  <pre><%= error.stack %></pre>
+  <a href="/">Go Home</a>
+</body>
+</html>

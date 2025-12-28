@@ -31,10 +31,10 @@ app.use((req, res) => {
   res.status(404).render('404', { message: 'Page not found' });
 });
 
-// Error handler (optional, useful for Render)
+// 500 error handler
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).render('500', { message: 'Internal Server Error' });
+  console.error(err.stack); // Log error stack in console
+  res.status(500).render('500', { error: err });
 });
 
 // Start server

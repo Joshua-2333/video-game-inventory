@@ -6,6 +6,7 @@ const {
   insertCategory,
   updateCategory,
   deleteCategory,
+  pool
 } = require('../db/queries');
 
 // Show all categories
@@ -18,21 +19,62 @@ exports.categoryList = async (req, res) => {
     });
   } catch (err) {
     console.error('Error loading categories:', err);
-    res.status(500).send('Server error');
+    res.status(500).render('500', { message: 'Server error', error: err });
   }
 };
 
-// Show a single category and its items
+// Show a single category or virtual category (Games/Consoles) with items
 exports.categoryDetail = async (req, res) => {
   try {
     const categoryId = req.params.id;
-    const category = await getCategoryById(categoryId);
-    if (!category) return res.status(404).send('Category not found');
 
-    let items = await getItemsByCategory(categoryId);
-    items = items || [];
+    let items = [];
+    let category = null;
+    let categoryName = '';
 
-    // Normalize all items: ensure genre, platforms, price, and condition are valid
+    if (categoryId === 'games') {
+      // Virtual "Games" category: aggregate items from all game-related categories
+      const allCategories = await getAllCategories();
+      const gameCategoryNames = ['RPG', 'Action', 'Sports', 'Adventure', 'Shooter', 'Strategy'];
+      const gameCategoryIds = allCategories
+        .filter(c => gameCategoryNames.includes(c.name))
+        .map(c => c.id);
+
+      for (const catId of gameCategoryIds) {
+        const catItems = await getItemsByCategory(catId);
+        items = items.concat(catItems);
+      }
+      categoryName = 'Games';
+
+    } else if (categoryId === 'consoles') {
+      // Virtual "Consoles" category: aggregate items by platform
+      const platforms = ['PS3','PS4','PS5','Xbox','Switch','PC'];
+      for (const platform of platforms) {
+        const res = await pool.query(`
+          SELECT i.id, i.name, i.price, i.genre, i.item_condition,
+                 ARRAY_AGG(p.name) FILTER (WHERE p.name IS NOT NULL) AS platforms
+          FROM items i
+          JOIN item_platforms ip ON i.id = ip.item_id
+          JOIN platforms p ON ip.platform_id = p.id
+          WHERE p.name = $1
+          GROUP BY i.id
+          ORDER BY i.name
+        `, [platform]);
+        items = items.concat(res.rows);
+      }
+      categoryName = 'Consoles';
+
+    } else {
+      // Normal category by numeric ID
+      category = await getCategoryById(categoryId);
+      if (!category) {
+        return res.status(404).render('404', { message: 'Category not found' });
+      }
+      items = await getItemsByCategory(categoryId);
+      categoryName = category.name;
+    }
+
+    // Normalize items
     items = items.map(item => ({
       ...item,
       genre: item.genre || 'Unknown',
@@ -41,16 +83,17 @@ exports.categoryDetail = async (req, res) => {
       item_condition: item.item_condition || 'New',
     }));
 
-    // Render categoryDetail with items
+    // Render the layout safely
     res.render('layout', {
       content: 'categories/categoryDetail',
       category,
+      categoryName,
       items,
     });
 
   } catch (err) {
     console.error('Error loading category detail:', err);
-    res.status(500).send('Server error');
+    res.status(500).render('500', { message: 'Server error', error: err });
   }
 };
 
@@ -70,7 +113,7 @@ exports.categoryCreate = async (req, res) => {
     res.redirect('/categories');
   } catch (err) {
     console.error('Error creating category:', err);
-    res.status(500).send('Server error');
+    res.status(500).render('500', { message: 'Server error', error: err });
   }
 };
 
@@ -78,7 +121,7 @@ exports.categoryCreate = async (req, res) => {
 exports.categoryEditForm = async (req, res) => {
   try {
     const category = await getCategoryById(req.params.id);
-    if (!category) return res.status(404).send('Category not found');
+    if (!category) return res.status(404).render('404', { message: 'Category not found' });
 
     res.render('layout', {
       content: 'categories/categoryForm',
@@ -86,7 +129,7 @@ exports.categoryEditForm = async (req, res) => {
     });
   } catch (err) {
     console.error('Error showing edit form:', err);
-    res.status(500).send('Server error');
+    res.status(500).render('500', { message: 'Server error', error: err });
   }
 };
 
@@ -98,7 +141,7 @@ exports.categoryUpdate = async (req, res) => {
     res.redirect(`/categories/${req.params.id}`);
   } catch (err) {
     console.error('Error updating category:', err);
-    res.status(500).send('Server error');
+    res.status(500).render('500', { message: 'Server error', error: err });
   }
 };
 
@@ -107,19 +150,19 @@ exports.categoryDelete = async (req, res) => {
   try {
     const { admin_password } = req.body;
     if (admin_password !== process.env.ADMIN_PASSWORD) {
-      return res.status(403).send('Invalid admin password');
+      return res.status(403).render('500', { message: 'Invalid admin password' });
     }
 
     const categoryId = req.params.id;
     const items = await getItemsByCategory(categoryId);
     if (items.length > 0) {
-      return res.status(400).send('Cannot delete category with items. Delete items first or move them.');
+      return res.status(400).render('500', { message: 'Cannot delete category with items. Delete items first or move them.' });
     }
 
     await deleteCategory(categoryId);
     res.redirect('/categories');
   } catch (err) {
     console.error('Error deleting category:', err);
-    res.status(500).send('Server error');
+    res.status(500).render('500', { message: 'Server error', error: err });
   }
 };

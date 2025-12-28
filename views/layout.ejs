@@ -9,7 +9,13 @@
 <body>
 
   <!-- Page content will be inserted below -->
-  <%- include(content) %>
+  <% if (typeof content === 'string' && content.length > 0) { %>
+    <%- include(content) %>
+  <% } else { %>
+    <h1>Page content not found</h1>
+    <p>Sorry, there was a problem loading this page.</p>
+    <a href="/">← Back to Home</a>
+  <% } %>
 
 </body>
 </html>

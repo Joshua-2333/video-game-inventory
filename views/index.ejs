@@ -1,27 +1,30 @@
-<!-- index.ejs -->
 <h1>Video Game Store</h1>
 <p>Browse our categories to explore games, consoles, and accessories.</p>
 
 <div class="cards-grid">
-  <% if (categories && categories.length) { %>
-    <% 
-      // Only show homepage main categories
-      const homepageCategories = categories.filter(cat => 
-        ['Games', 'Consoles', 'Accessories'].includes(cat.name)
-      );
-      homepageCategories.forEach(category => { 
-    %>
-      <div class="card">
-        <h3>
-          <a href="/categories/<%= category.id %>"><%= category.name %></a>
-        </h3>
-        <p><%= category.description || 'No description available.' %></p>
-        <a href="/categories/<%= category.id %>">
-          <button aria-label="Explore <%= category.name %> category">Explore</button>
-        </a>
-      </div>
-    <% }) %>
-  <% } else { %>
-    <p>No categories found.</p>
+  <!-- Games Section -->
+  <div class="card">
+    <h3><a href="/categories/games">Games</a></h3>
+    <p>Explore RPG, Action, Sports, Adventure, Shooter, and Strategy games.</p>
+    <a href="/categories/games"><button aria-label="Explore Games">Explore</button></a>
+  </div>
+
+  <!-- Consoles Section -->
+  <div class="card">
+    <h3><a href="/categories/consoles">Consoles</a></h3>
+    <p>Browse all our gaming consoles: PS3, PS4, PS5, Xbox, Switch, PC.</p>
+    <a href="/categories/consoles"><button aria-label="Explore Consoles">Explore</button></a>
+  </div>
+
+  <!-- Accessories Section -->
+  <% const accessoriesCategory = categories.find(cat => cat.name === 'Accessories'); %>
+  <% if (accessoriesCategory) { %>
+    <div class="card">
+      <h3><a href="/categories/<%= accessoriesCategory.id %>"><%= accessoriesCategory.name %></a></h3>
+      <p><%= accessoriesCategory.description || 'No description available.' %></p>
+      <a href="/categories/<%= accessoriesCategory.id %>">
+        <button aria-label="Explore <%= accessoriesCategory.name %>">Explore</button>
+      </a>
+    </div>
   <% } %>
 </div>
