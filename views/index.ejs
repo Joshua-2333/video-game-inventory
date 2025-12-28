@@ -1,7 +1,23 @@
 <!-- index.ejs -->
 <h1>Video Game Store</h1>
-<ul>
-  <li><a href="/categories/3">Accessories</a></li>
-  <li><a href="/categories/2">Consoles</a></li>
-  <li><a href="/categories/1">Games</a></li>
-</ul>
+<p>Browse our categories to explore games, consoles, and accessories.</p>
+
+<div class="cards-grid">
+  <% if (categories && categories.length) { %>
+    <% categories
+         .filter(category => category.name !== 'PC Games') // Remove PC Games
+         .forEach(category => { %>
+      <div class="card">
+        <h3>
+          <a href="/categories/<%= category.id %>"><%= category.name %></a>
+        </h3>
+        <p><%= category.description || 'No description available.' %></p>
+        <a href="/categories/<%= category.id %>">
+          <button aria-label="Explore <%= category.name %> category">Explore</button>
+        </a>
+      </div>
+    <% }) %>
+  <% } else { %>
+    <p>No categories found.</p>
+  <% } %>
+</div>
