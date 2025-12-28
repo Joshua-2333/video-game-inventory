@@ -1,12 +1,12 @@
 <!-- views/games.ejs -->
-<h1>All Games</h1>
+ <h1>All Games</h1>
 <p>Filter games by genre and platform:</p>
 
 <!-- Filter section -->
 <div class="filters" style="margin-bottom: 20px;">
   <label for="genreFilter">Filter by Genre:</label>
   <select id="genreFilter" onchange="filterGames()">
-    <option value="all">All</option>
+    <option value="all">All Genres</option>
     <% 
       const allGenres = [...new Set(games.map(g => g.genre).filter(Boolean))];
       allGenres.forEach(genre => { 
@@ -29,17 +29,27 @@
 
 <!-- Games grid -->
 <div id="gamesList" style="display:grid; grid-template-columns: repeat(auto-fill,minmax(250px,1fr)); gap:15px;">
-  <% games.forEach(game => { %>
-    <div class="game-card"
-         data-genre="<%= game.genre || 'Unknown' %>"
-         data-platforms="<%= game.platforms && game.platforms.length ? game.platforms.join(',') : '' %>"
-         style="border:1px solid #ccc; padding:10px; border-radius:5px;">
-      <h3><%= game.name %></h3>
-      <p>Genre: <%= game.genre || 'Unknown' %></p>
-      <p>Platforms: <%= game.platforms && game.platforms.length ? game.platforms.join(', ') : 'No Platforms' %></p>
-      <p>Price: $<%= game.price %></p>
-    </div>
-  <% }) %>
+  <% 
+    // Use a Map to prevent duplicate game cards
+    const displayed = new Map();
+    games.forEach(game => {
+      if (!displayed.has(game.name)) {
+        displayed.set(game.name, game);
+  %>
+      <div class="game-card"
+           data-genre="<%= game.genre || 'Unknown' %>"
+           data-platforms="<%= game.platforms && game.platforms.length ? game.platforms.join(',') : '' %>"
+           style="border:1px solid #ccc; padding:10px; border-radius:5px;">
+        <h3><%= game.name %></h3>
+        <p><strong>Genre:</strong> <%= game.genre || 'Unknown' %></p>
+        <p><strong>Platforms:</strong> <%= game.platforms && game.platforms.length ? game.platforms.join(', ') : 'No Platforms' %></p>
+        <p><strong>Price:</strong> $<%= game.price %></p>
+        <p><strong>Condition:</strong> <%= game.item_condition %></p>
+      </div>
+  <% 
+      }
+    }) 
+  %>
 </div>
 
 <p id="noGames" style="display:none; margin-top:10px;">No games match the selected filters.</p>

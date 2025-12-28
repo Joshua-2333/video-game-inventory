@@ -13,7 +13,7 @@ router.get('/', async (req, res) => {
   try {
     const { genre, platform } = req.query;
 
-    // Fetch all games
+    // Fetch all games from DB
     let games = await getAllGames();
 
     // Normalize data to prevent errors in EJS
@@ -25,7 +25,10 @@ router.get('/', async (req, res) => {
       item_condition: game.item_condition || 'New',
     }));
 
-    // SERVER-SIDE FILTERING
+    // Log the games to check data structure
+    console.log('Fetched games:', games);
+
+    // SERVER-SIDE FILTERING (optional)
     if (genre && genre !== 'all') {
       games = games.filter(game => game.genre === genre);
     }
@@ -34,7 +37,7 @@ router.get('/', async (req, res) => {
       games = games.filter(game => {
         if (!game.platforms.length) return false;
 
-        // Handle PlayStation as alias for PS3, PS4, PS5
+        // Treat "PS" as alias for PS3, PS4, PS5
         if (platform === 'PS') {
           return game.platforms.some(p => ['PS3', 'PS4', 'PS5'].includes(p));
         }
@@ -49,7 +52,11 @@ router.get('/', async (req, res) => {
     }
 
     // Render the EJS page
-    res.render('games', { games, genre: genre || 'all', platform: platform || 'all' });
+    res.render('games', {
+      games,
+      genre: genre || 'all',
+      platform: platform || 'all'
+    });
 
   } catch (err) {
     console.error('Error fetching games:', err);

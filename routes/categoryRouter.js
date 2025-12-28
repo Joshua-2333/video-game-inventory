@@ -4,29 +4,17 @@ const router = express.Router();
 const categoryController = require('../controllers/categoryController');
 const pool = require('../db/queries').pool;
 
-//STANDARD CATEGORY ROUTES
-// List all categories
+// STANDARD CATEGORY ROUTES
 router.get('/', categoryController.categoryList);
-
-// Show create category form
 router.get('/new', categoryController.categoryCreateForm);
-
-// Handle create category
 router.post('/new', categoryController.categoryCreate);
-
-// Show edit category form
 router.get('/:id/edit', categoryController.categoryEditForm);
-
-// Handle update category
 router.post('/:id/edit', categoryController.categoryUpdate);
-
-// Category detail page
 router.get('/:id', categoryController.categoryDetail);
-
-// Handle delete category (with admin password protection)
 router.post('/:id/delete', categoryController.categoryDelete);
 
-//CUSTOM CATEGORY PAGES
+// CUSTOM CATEGORY PAGES
+
 // Games page with filters
 router.get('/games', async (req, res) => {
   try {
@@ -35,12 +23,22 @@ router.get('/games', async (req, res) => {
         ARRAY_AGG(p.name) as platforms
       FROM items i
       JOIN categories c ON i.category_id = c.id
-      JOIN item_platforms ip ON i.id = ip.item_id
-      JOIN platforms p ON ip.platform_id = p.id
+      LEFT JOIN item_platforms ip ON i.id = ip.item_id
+      LEFT JOIN platforms p ON ip.platform_id = p.id
       GROUP BY i.id, c.name
       ORDER BY i.name
     `);
-    res.render('games', { games: result.rows });
+
+    const games = result.rows.map(game => ({
+      ...game,
+      platforms: game.platforms.filter(Boolean), // remove nulls
+      genre: game.genre || 'Unknown',
+      item_condition: game.item_condition || 'New'
+    }));
+
+    console.log(games); // <-- check server console
+
+    res.render('categoryDetail', { category: { name: 'Games', description: 'All games' }, games });
   } catch (err) {
     console.error(err);
     res.send('Error loading games.');
@@ -54,8 +52,8 @@ router.get('/accessories', async (req, res) => {
       SELECT i.id, i.name, i.price, ARRAY_AGG(p.name) as platforms
       FROM items i
       JOIN categories c ON i.category_id = c.id
-      JOIN item_platforms ip ON i.id = ip.item_id
-      JOIN platforms p ON ip.platform_id = p.id
+      LEFT JOIN item_platforms ip ON i.id = ip.item_id
+      LEFT JOIN platforms p ON ip.platform_id = p.id
       WHERE c.name='Accessories'
       GROUP BY i.id
       ORDER BY i.name
@@ -74,8 +72,8 @@ router.get('/consoles', async (req, res) => {
       SELECT i.id, i.name, i.price, ARRAY_AGG(p.name) as platforms
       FROM items i
       JOIN categories c ON i.category_id = c.id
-      JOIN item_platforms ip ON i.id = ip.item_id
-      JOIN platforms p ON ip.platform_id = p.id
+      LEFT JOIN item_platforms ip ON i.id = ip.item_id
+      LEFT JOIN platforms p ON ip.platform_id = p.id
       WHERE c.name='Consoles'
       GROUP BY i.id
       ORDER BY i.name
