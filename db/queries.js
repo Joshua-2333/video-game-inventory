@@ -69,8 +69,8 @@ const getItemsByCategory = async (categoryId) => {
       i.quantity,
       i.item_condition,
       i.release_date,
-      i.genre,  -- Use the genre column from items table
-      ARRAY_AGG(p.name) FILTER (WHERE p.name IS NOT NULL) AS platforms
+      i.genre,
+      COALESCE(ARRAY_AGG(p.name) FILTER (WHERE p.name IS NOT NULL), '{}') AS platforms
     FROM items i
     LEFT JOIN item_platforms ip ON i.id = ip.item_id
     LEFT JOIN platforms p ON ip.platform_id = p.id
@@ -80,7 +80,13 @@ const getItemsByCategory = async (categoryId) => {
     `,
     [categoryId]
   );
-  return rows;
+
+  // Ensure platforms is always an array
+  return rows.map(item => ({
+    ...item,
+    platforms: Array.isArray(item.platforms) ? item.platforms : [],
+    item_condition: item.item_condition || 'New',
+  }));
 };
 
 // Get a single item by id (with platforms)
@@ -94,8 +100,8 @@ const getItemById = async (id) => {
       i.quantity,
       i.item_condition,
       i.release_date,
-      i.genre,  -- Use the genre column from items table
-      ARRAY_AGG(p.name) FILTER (WHERE p.name IS NOT NULL) AS platforms
+      i.genre,
+      COALESCE(ARRAY_AGG(p.name) FILTER (WHERE p.name IS NOT NULL), '{}') AS platforms
     FROM items i
     LEFT JOIN item_platforms ip ON i.id = ip.item_id
     LEFT JOIN platforms p ON ip.platform_id = p.id
@@ -104,7 +110,14 @@ const getItemById = async (id) => {
     `,
     [id]
   );
-  return rows[0];
+
+  if (!rows[0]) return null;
+
+  return {
+    ...rows[0],
+    platforms: Array.isArray(rows[0].platforms) ? rows[0].platforms : [],
+    item_condition: rows[0].item_condition || 'New',
+  };
 };
 
 // Create a new item
@@ -200,9 +213,9 @@ const getAllGames = async () => {
       i.id,
       i.name,
       i.price,
-      i.genre,           -- Use the genre column from items table
+      i.genre,
       i.item_condition,
-      ARRAY_AGG(p.name) FILTER (WHERE p.name IS NOT NULL) AS platforms
+      COALESCE(ARRAY_AGG(p.name) FILTER (WHERE p.name IS NOT NULL), '{}') AS platforms
     FROM items i
     LEFT JOIN item_platforms ip ON i.id = ip.item_id
     LEFT JOIN platforms p ON ip.platform_id = p.id
@@ -210,7 +223,12 @@ const getAllGames = async () => {
     ORDER BY i.name
     `
   );
-  return rows;
+
+  return rows.map(game => ({
+    ...game,
+    platforms: Array.isArray(game.platforms) ? game.platforms : [],
+    item_condition: game.item_condition || 'New',
+  }));
 };
 
 /* EXPORTS */

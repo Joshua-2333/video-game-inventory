@@ -5,21 +5,23 @@ const { pool } = require('../db/queries');
 const categoryController = require('../controllers/categoryController');
 
 // ------------------------
-// HELPER FUNCTION TO FETCH ITEMS FOR VIRTUAL CATEGORIES
+// Helper: get all items for a category by name
 // ------------------------
 async function getItemsByCategoryName(categoryName) {
+  // Join categories to get category ID by name
   const result = await pool.query(`
     SELECT i.id, i.name, i.price, i.genre, i.item_condition,
-           ARRAY_AGG(p.name) FILTER (WHERE p.name IS NOT NULL) AS platforms
+           ARRAY_REMOVE(ARRAY_AGG(p.name), NULL) AS platforms
     FROM items i
     JOIN categories c ON i.category_id = c.id
     LEFT JOIN item_platforms ip ON i.id = ip.item_id
     LEFT JOIN platforms p ON ip.platform_id = p.id
-    WHERE c.name = $1
+    WHERE LOWER(c.name) = LOWER($1)
     GROUP BY i.id
     ORDER BY i.name
   `, [categoryName]);
 
+  // Ensure defaults for missing fields
   return result.rows.map(item => ({
     ...item,
     platforms: item.platforms || [],
@@ -30,16 +32,15 @@ async function getItemsByCategoryName(categoryName) {
 }
 
 // ------------------------
-// VIRTUAL CATEGORY ROUTES
-// Must be ABOVE the wildcard route
+// Virtual category routes
 // ------------------------
 
-// Games page
+// Games page: aggregate items from multiple game categories
 router.get('/games', async (req, res) => {
   try {
     const gameCategoryNames = ['RPG', 'Action', 'Sports', 'Adventure', 'Shooter', 'Strategy'];
 
-    // Get IDs of game categories
+    // Get category IDs for game categories
     const categoryIdsResult = await pool.query(
       `SELECT id FROM categories WHERE name = ANY($1)`,
       [gameCategoryNames]
@@ -50,7 +51,7 @@ router.get('/games', async (req, res) => {
     for (const catId of categoryIds) {
       const resQuery = await pool.query(`
         SELECT i.id, i.name, i.price, i.genre, i.item_condition,
-               ARRAY_AGG(p.name) FILTER (WHERE p.name IS NOT NULL) AS platforms
+               ARRAY_REMOVE(ARRAY_AGG(p.name), NULL) AS platforms
         FROM items i
         LEFT JOIN item_platforms ip ON i.id = ip.item_id
         LEFT JOIN platforms p ON ip.platform_id = p.id
@@ -58,6 +59,7 @@ router.get('/games', async (req, res) => {
         GROUP BY i.id
         ORDER BY i.name
       `, [catId]);
+
       items = items.concat(resQuery.rows.map(item => ({
         ...item,
         platforms: item.platforms || [],
@@ -83,6 +85,7 @@ router.get('/games', async (req, res) => {
 router.get('/consoles', async (req, res) => {
   try {
     const items = await getItemsByCategoryName('Consoles');
+
     res.render('layout', {
       content: 'categories/categoryDetail',
       category: null,
@@ -99,6 +102,7 @@ router.get('/consoles', async (req, res) => {
 router.get('/accessories', async (req, res) => {
   try {
     const items = await getItemsByCategoryName('Accessories');
+
     res.render('layout', {
       content: 'categories/categoryDetail',
       category: null,
@@ -112,8 +116,7 @@ router.get('/accessories', async (req, res) => {
 });
 
 // ------------------------
-// STANDARD CATEGORY ROUTES
-// Must be AFTER virtual category routes
+// Standard category routes
 // ------------------------
 router.get('/', categoryController.categoryList);
 router.get('/new', categoryController.categoryCreateForm);

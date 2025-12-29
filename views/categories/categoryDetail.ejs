@@ -1,4 +1,3 @@
-<!-- categoryDetail.ejs -->
 <% const displayName = category ? category.name : categoryName; %>
 <h1><%= displayName %></h1>
 
@@ -13,7 +12,7 @@
     <select id="genreFilter" onchange="filterGames()">
       <option value="all">All</option>
       <% 
-        const allGenres = [...new Set(items.map(item => item.genre).filter(Boolean))].sort();
+        const allGenres = [...new Set(items.map(item => item.genre || 'Unknown'))].sort();
         allGenres.forEach(genre => { 
       %>
         <option value="<%= genre %>"><%= genre %></option>
@@ -38,10 +37,10 @@
            data-genre="<%= item.genre || 'Unknown' %>"
            data-platforms="<%= (item.platforms || []).join(',') %>">
         <h3><%= item.name %></h3>
-        <p>Genre: <%= item.genre || 'Unknown' %></p>
-        <p>Platforms: <%= (item.platforms || []).join(', ') %></p>
-        <p>Price: $<%= item.price || 0 %></p>
-        <p>Condition: <%= item.item_condition || 'New' %></p>
+        <p><strong>Genre:</strong> <%= item.genre || 'Unknown' %></p>
+        <p><strong>Platforms:</strong> <%= (item.platforms && item.platforms.length ? item.platforms.join(', ') : 'No Platforms') %></p>
+        <p><strong>Price:</strong> $<%= item.price || 0 %></p>
+        <p><strong>Condition:</strong> <%= item.item_condition || 'New' %></p>
         <a href="/items/<%= item.id %>/edit">✏️ Edit</a>
         <form action="/items/<%= item.id %>/delete" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this item?');">
           <button type="submit">🗑️ Delete</button>
@@ -89,10 +88,12 @@
       <% items.forEach(item => { %>
         <div class="card">
           <h3><%= item.name %></h3>
-          <p>Price: $<%= item.price || 0 %></p>
-          <p>Condition: <%= item.item_condition || 'New' %></p>
+          <p><strong>Price:</strong> $<%= item.price || 0 %></p>
+          <p><strong>Condition:</strong> <%= item.item_condition || 'New' %></p>
           <% if (item.platforms && item.platforms.length) { %>
-            <p>Platforms: <%= item.platforms.join(', ') %></p>
+            <p><strong>Platforms:</strong> <%= item.platforms.join(', ') %></p>
+          <% } else { %>
+            <p><strong>Platforms:</strong> None</p>
           <% } %>
           <a href="/items/<%= item.id %>/edit">✏️ Edit</a>
           <form action="/items/<%= item.id %>/delete" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this item?');">
