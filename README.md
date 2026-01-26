@@ -45,6 +45,10 @@ This project was built as part of the NodeJS course assignment.
 
 ---
 
+## Demo
+
+https://video-game-inventory.onrender.com
+
 ## Installation
 
 1. **Clone the repository:**
@@ -52,7 +56,3 @@ This project was built as part of the NodeJS course assignment.
 ```bash
 git clone https://github.com/YOUR_USERNAME/video-game-inventory.git
 cd video-game-inventory
-
-## Demo
-
-https://video-game-inventory.onrender.com
