@@ -2,9 +2,10 @@
   "name": "video-game-inventory",
   "version": "1.0.0",
   "description": "A Node.js inventory app for video game categories and items.",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
     "start": "node app.js",
+    "seed": "node db/seed.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
