@@ -8,7 +8,6 @@ const categoryController = require('../controllers/categoryController');
 // Helper: get all items for a category by name
 // ------------------------
 async function getItemsByCategoryName(categoryName) {
-  // Join categories to get category ID by name
   const result = await pool.query(`
     SELECT i.id, i.name, i.price, i.genre, i.item_condition,
            ARRAY_REMOVE(ARRAY_AGG(p.name), NULL) AS platforms
@@ -21,7 +20,6 @@ async function getItemsByCategoryName(categoryName) {
     ORDER BY i.name
   `, [categoryName]);
 
-  // Ensure defaults for missing fields
   return result.rows.map(item => ({
     ...item,
     platforms: item.platforms || [],
@@ -35,39 +33,10 @@ async function getItemsByCategoryName(categoryName) {
 // Virtual category routes
 // ------------------------
 
-// Games page: aggregate items from multiple game categories
+// Games page
 router.get('/games', async (req, res) => {
   try {
-    const gameCategoryNames = ['RPG', 'Action', 'Sports', 'Adventure', 'Shooter', 'Strategy'];
-
-    // Get category IDs for game categories
-    const categoryIdsResult = await pool.query(
-      `SELECT id FROM categories WHERE name = ANY($1)`,
-      [gameCategoryNames]
-    );
-    const categoryIds = categoryIdsResult.rows.map(r => r.id);
-
-    let items = [];
-    for (const catId of categoryIds) {
-      const resQuery = await pool.query(`
-        SELECT i.id, i.name, i.price, i.genre, i.item_condition,
-               ARRAY_REMOVE(ARRAY_AGG(p.name), NULL) AS platforms
-        FROM items i
-        LEFT JOIN item_platforms ip ON i.id = ip.item_id
-        LEFT JOIN platforms p ON ip.platform_id = p.id
-        WHERE i.category_id = $1
-        GROUP BY i.id
-        ORDER BY i.name
-      `, [catId]);
-
-      items = items.concat(resQuery.rows.map(item => ({
-        ...item,
-        platforms: item.platforms || [],
-        genre: item.genre || 'Unknown',
-        item_condition: item.item_condition || 'New',
-        price: item.price || 0
-      })));
-    }
+    const items = await getItemsByCategoryName('Games');
 
     res.render('layout', {
       content: 'categories/categoryDetail',
