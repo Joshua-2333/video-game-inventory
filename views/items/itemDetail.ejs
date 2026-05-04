@@ -4,18 +4,18 @@
 <p>
   <strong>Price:</strong> $<%= item.price %><br>
   <strong>Quantity:</strong> <%= item.quantity %><br>
-  <strong>Platform:</strong> <%= item.platform %><br>
-  <strong>Condition:</strong> <%= item.item_condition %><br>
-  <strong>Release Date:</strong> <%= item.release_date.toISOString().split('T')[0] %>
+  <strong>Genre:</strong> <%= item.genre || 'Unknown' %><br>
+  <strong>Platforms:</strong>
+  <%= item.platforms && item.platforms.length ? item.platforms.join(', ') : 'No Platforms' %><br>
+  <strong>Condition:</strong> <%= item.item_condition || 'New' %><br>
+  <strong>Release Date:</strong>
+  <%= item.release_date ? item.release_date.toISOString().split('T')[0] : 'Unknown' %>
 </p>
 
-<!-- Edit Item -->
 <a href="/items/<%= item.id %>/edit">✏️ Edit Item</a>
 
-<!-- Delete Item -->
 <form action="/items/<%= item.id %>/delete" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this item?');">
   <button type="submit">🗑️ Delete Item</button>
 </form>
 
-<!-- Back to category -->
 <a href="/categories/<%= item.category_id %>">← Back to category</a>

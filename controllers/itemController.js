@@ -33,9 +33,9 @@ exports.itemCreate = async (req, res) => {
       price,
       quantity,
       category_id,
-      platform,
       item_condition,
       release_date,
+      genre,
     } = req.body;
 
     await insertItem(
@@ -43,9 +43,9 @@ exports.itemCreate = async (req, res) => {
       price,
       quantity,
       category_id,
-      platform,
       item_condition,
-      release_date
+      release_date,
+      genre
     );
 
     res.redirect(`/categories/${category_id}`);
@@ -83,9 +83,9 @@ exports.itemUpdate = async (req, res) => {
       price,
       quantity,
       category_id,
-      platform,
       item_condition,
       release_date,
+      genre,
     } = req.body;
 
     await updateItem(
@@ -94,9 +94,9 @@ exports.itemUpdate = async (req, res) => {
       price,
       quantity,
       category_id,
-      platform,
       item_condition,
-      release_date
+      release_date,
+      genre
     );
 
     res.redirect(`/categories/${category_id}`);
@@ -127,7 +127,6 @@ exports.itemDelete = async (req, res) => {
   try {
     const { admin_password } = req.body;
 
-    // Admin password validation
     if (admin_password !== process.env.ADMIN_PASSWORD) {
       return res.status(403).send('Invalid admin password');
     }
